@@ -15,12 +15,9 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  height: 40px;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
 }
 
@@ -28,11 +25,25 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/*********************************/
+
+
+.gene-search-form {
+    padding: 10px;
+    height: 60px;
+    background-color: lightgray;
+    border: 2px solid black;
+    width: fit-content;
+    margin: 10px auto;
+}
+
+.form-element {
+    float: left;
+    margin: 5px;
+}
+    
+.form-element .submit {
+    background-color: green;
+    color: white;
+    font-weight: bold;
 }
