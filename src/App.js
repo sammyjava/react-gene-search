@@ -1,7 +1,23 @@
+import { useState } from 'react';
+
 import './App.css';
+import { genusList, speciesList, strainList } from './arrays.js';
 
 function App() {
 
+    // selectors
+    const [selectedGenus, setSelectedGenus] = useState("");
+    const [selectedSpecies, setSelectedSpecies] = useState("");
+    const [selectedStrain, setSelectedStrain] = useState("");
+    // text input
+    const [nameOrIdentifier, setNameOrIdentifier] = useState("");
+    const [description, setDescription] = useState("");
+    const [geneFamilyIdentifier, setGeneFamilyIdentifier] = useState("");
+    // dependent selector lists
+    const [speciesOptions, setSpeciesOptions] = useState([]);
+    const [strainOptions, setStrainOptions] = useState([]);
+
+    // handle form submission
     function handleSubmit(e) {
         // Prevent the browser from reloading the page
         e.preventDefault();
@@ -15,7 +31,32 @@ function App() {
 
         // Or you can work with it as a plain object:
         const formJson = Object.fromEntries(formData.entries());
-        console.log(formJson);
+
+        setSelectedGenus(formJson.genus);
+        setSelectedSpecies(formJson.species);
+        setSelectedStrain(formJson.strain);
+
+        if (formJson.genus) {
+            setSpeciesOptions(speciesList[formJson.genus]);
+        }
+            
+    }
+
+    function handleGenusSelection(e) {
+        setSelectedGenus(e.target.value);
+        setSpeciesOptions(speciesList[e.target.value]);
+        setSelectedSpecies("");
+        setSelectedStrain("");
+    }
+
+    function handleSpeciesSelection(e) {
+        setSelectedSpecies(e.target.value);
+        setStrainOptions(strainList[e.target.value]);
+        setSelectedStrain("");
+    }
+
+    function handleStrainSelection(e) {
+        setSelectedStrain(e.target.value);
     }
 
     return (
@@ -27,65 +68,60 @@ function App() {
 
           <div className="gene-search-form">
             <form method="post" onSubmit={handleSubmit}>            
-
               <div className="form-element">
                 <label>Genus:<br/>
-                  <select name="genus">
-                    <option value="any">-- any --</option>
-                    <option value="Aeschynome">Aeschynome</option>
-                    <option value="Arachis">Arachis</option>
-                    <option value="Cajanus">Cajanus</option>
+                  <select name="genus" value={selectedGenus}
+                          onChange={e => handleGenusSelection(e)}>
+                    <option value="">-- any --</option>
+                    {genusList.map((genus) => <option value={genus}>{genus}</option>)}
                   </select>
                 </label>
               </div>
-
               <div className="form-element">
                 <label>species:<br/>
-                  <select name="species">
-                    <option value="any">-- any --</option>
-                    <option value="cardenasii">cardenasii</option>
-                    <option value="duranensis">duranensis</option>
-                    <option value="hypogaea">hypogaea</option>
-                    <option value="ipaensis">ipaensis</option>
-                    <option value="stenosperma">stenosperma</option>
+                  <select name="species" value={selectedSpecies}
+                          onChange={e => handleSpeciesSelection(e)}>
+                    <option value="">-- any --</option>
+                    {selectedGenus && (
+                        speciesOptions.map((species) => <option value={species}>{species}</option>)
+                    )}
                   </select>
                 </label>
               </div>
-
               <div className="form-element">
                 <label>accession:<br/>
-                  <select name="strain">
-                    <option value="any">-- any --</option>
-                    <option value="Tifrunner">Tifrunner</option>
+                  <select name="strain" value={selectedStrain}
+                          onChange={e => handleStrainSelection(e)}>
+                    <option value="">-- any --</option>
+                    {selectedSpecies && (
+                        strainOptions.map((strain) => <option value={strain}>{strain}</option>)
+                    )}
                   </select>
                 </label>
               </div>
-
               <div className="form-element">
                 <label>name / identifier:<br/>
                   <input name="nameOrIdentifier"/>
                 </label>
               </div>
-
               <div className="form-element">
                 <label>description:<br/>
                   <input name="description"/>
                 </label>
               </div>
-
               <div className="form-element">
                 <label>gene family identifier:<br/>
                   <input name="geneFamilyIdentifier"/>
                 </label>
               </div>
-
               <div className="form-element">
                 <br/>
                 <button type="submit" className="submit">SUBMIT</button>
               </div>
-              
             </form>
           </div>
+
+
         </div>
     );
 }
