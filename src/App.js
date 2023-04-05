@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GlidingBlink } from 'react-loading-indicators';
-import { genusList, speciesList, strainList } from './arrays.js';
+// import { genusList, speciesList, strainList } from './arrays.js';
 
 function App() {
 
+    // selector lists
+    const [genusList, setGenusList] = useState([]);
+    const [speciesList, setSpeciesList] = useState([]);
+    const [strainList, setStrainList] = useState([]);
+    
     // selectors
     const [selectedGenus, setSelectedGenus] = useState("");
     const [selectedSpecies, setSelectedSpecies] = useState("");
@@ -12,9 +17,6 @@ function App() {
     const [nameOrIdentifier, setNameOrIdentifier] = useState("");
     const [description, setDescription] = useState("");
     const [geneFamilyIdentifier, setGeneFamilyIdentifier] = useState("");
-    // dependent selector lists
-    const [speciesOptions, setSpeciesOptions] = useState([]);
-    const [strainOptions, setStrainOptions] = useState([]);
     // GraphQL response
     const [response, setResponse] = useState({});
     // genes array from response
@@ -22,8 +24,139 @@ function App() {
     // loading flag
     const [loading, setLoading] = useState(false);
 
+    // get the genus list from the start
+    useEffect(() => {
+        getGenusList();
+    }, []);
+
+    // get the genus List (run once at initial render)
+    async function getGenusList() {
+        setLoading(true);
+        const requestJson = {
+            "operationName": "Organisms",
+            "variables": {
+                "size": 100,
+                "nameOrIdentifier": "Phvul.003G132500",
+                "geneFamilyIdentifier": "legfed_v1_0.L_26Y4PS",
+                "strain": "G19833",
+                "species": "vulgaris",
+                "genus": "Phaseolus",
+                "description": "Photosystem II"
+            },
+            "query": "query Organisms($size: Int) {  organisms(size: $size) {    genus  }}"
+        };
+        fetch(process.env.REACT_APP_GRAPHQL_URI, {
+            method: "POST",
+            mode: "cors", // no-cors, *cors, same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            // credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify(requestJson),
+        })
+            .then((response) => {
+                setLoading(false);
+                return(response.json());
+            })
+            .then((responseJson) => {
+                const genusList = [];
+                responseJson.data.organisms.map((organism) => {
+                    if (organism.genus && !genusList.includes(organism.genus)) {
+                        genusList.push(organism.genus);
+                    }
+                });
+                setGenusList(genusList);
+                console.log(genusList);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+    // get the species list for a given genus
+    async function getSpeciesList(genus) {
+        const requestJson = {
+            "operationName": "Organisms",
+            "variables": {
+                "genus": genus,
+                "size": 100
+            },
+            "query": "query Organisms($size: Int, $genus: String) {  organisms(size: $size, genus: $genus) {    species  }}"
+        }
+        fetch(process.env.REACT_APP_GRAPHQL_URI, {
+            method: "POST",
+            mode: "cors", // no-cors, *cors, same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            // credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify(requestJson),
+        })
+            .then((response) => {
+                setLoading(false);
+                return(response.json());
+            })
+            .then((responseJson) => {
+                const speciesList = [];
+                responseJson.data.organisms.map((organism) => {
+                    if (organism.species && !speciesList.includes(organism.species)) {
+                        speciesList.push(organism.species);
+                    }
+                });
+                setSpeciesList(speciesList);
+                console.log(speciesList);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
+    // {"data":{"strains":[{"identifier":"5-593"},{"identifier":"BAT93"},{"identifier":"G19833"},{"identifier":"LaborOvalle"},{"identifier":"UI111"}]}}
+    
+    async function getStrainList(species) {
+        setLoading(true);
+        const requestJson = {
+            "operationName":"Strains",
+            "variables": {
+                "species": species,
+                "size":100
+            },
+            "query": "query Strains($species: String) {  strains(species: $species) {    identifier  }}"
+        }
+        fetch(process.env.REACT_APP_GRAPHQL_URI, {
+            method: "POST",
+            mode: "cors", // no-cors, *cors, same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            // credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify(requestJson),
+        })
+            .then((response) => {
+                setLoading(false);
+                return(response.json());
+            })
+            .then((responseJson) => {
+                const strainList = [];
+                responseJson.data.strains.map((strain) => {
+                    strainList.push(strain.identifier);
+                });
+                setStrainList(strainList);
+                console.log(strainList);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
     // query GraphQL and set appropriate state variables
-    async function queryGraphQL(data = {}) {
+    async function queryGenes(data = {}) {
         setLoading(true);
         fetch(process.env.REACT_APP_GRAPHQL_URI, {
             method: "POST",
@@ -65,10 +198,6 @@ function App() {
         setSelectedSpecies(formJson.species);
         setSelectedStrain(formJson.strain);
 
-        if (formJson.genus) {
-            setSpeciesOptions(speciesList[formJson.genus]);
-        }
-
         const query = "query Query($nameOrIdentifier: String, $description: String, $genus: String, $species: String, $strain: String, $geneFamilyIdentifier: String) { " +
               "genes(genus: $genus, species: $species, strain: $strain, nameOrIdentifier: $nameOrIdentifier, description: $description, geneFamilyIdentifier: $geneFamilyIdentifier) { " +
               "name " +
@@ -80,7 +209,7 @@ function App() {
               "locations { chromosome { identifier } start end strand } " +
               "}}";
         
-        queryGraphQL( {
+        queryGenes( {
             "query": query,
             "variables": {
                 "genus": formJson.genus,
@@ -94,16 +223,17 @@ function App() {
         });
     }
 
+    // query GraphQL for the available species for a given genus
     function handleGenusSelection(e) {
         setSelectedGenus(e.target.value);
-        setSpeciesOptions(speciesList[e.target.value]);
+        getSpeciesList(e.target.value);
         setSelectedSpecies("");
         setSelectedStrain("");
     }
 
     function handleSpeciesSelection(e) {
         setSelectedSpecies(e.target.value);
-        setStrainOptions(strainList[e.target.value]);
+        getStrainList(e.target.value);
         setSelectedStrain("");
     }
 
@@ -113,62 +243,66 @@ function App() {
 
     return (
         <div className="uk-padding">
-
+          
           <h2 className="uk-heading-small">
-            React Gene Search Demo (UIkit)
+            LIS Gene Search Demo (React, UIkit)
           </h2>
 
+          <code>
+            Note: this is for design-purposes only. Linkouts are not implemented.
+          </code>
+
           <form className="uk-flex" method="post" onSubmit={handleSubmit}>
-              <div className="uk-padding-small">
-                <label className="uk-label">Genus</label><br/>
-                <select className="uk-select uk-form-small" name="genus" value={selectedGenus}
-                        onChange={e => handleGenusSelection(e)}>
-                  <option key={-1} value="">-- any --</option>
-                  {genusList.map((genus, index) => (
-                      <option key={index} value={genus}>{genus}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="uk-padding-small">
-                <label className="uk-label">species</label><br/>
-                <select className="uk-select uk-form-small" name="species" value={selectedSpecies}
-                        onChange={e => handleSpeciesSelection(e)}>
-                  <option key={-1} value="">-- any --</option>
-                  {selectedGenus && (
-                      speciesOptions.map((species, index) => (
-                          <option key={index} value={species}>{species}</option>
-                      ))
-                  )}
-                </select>
-              </div>
-              <div className="uk-padding-small">
-                <label className="uk-label">accession</label><br/>
-                <select className="uk-select uk-form-small" name="strain" value={selectedStrain}
-                        onChange={e => handleStrainSelection(e)}>
-                  <option key={-1} value="">-- any --</option>
-                  {strainOptions && (
-                      strainOptions.map((strain, index) => (
-                          <option key={index} value={strain}>{strain}</option>
-                      ))
-                  )}
-                </select>
-              </div>
-              <div className="uk-padding-small">
-                <label className="uk-label">name / identifier</label><br/>
-                <input className="uk-input uk-form-small uk-form-width-medium" name="nameOrIdentifier"/>
-              </div>
-              <div className="uk-padding-small">
-                <label className="uk-label">description</label><br/>
-                <input className="uk-input uk-form-small" name="description"/>
-              </div>
-              <div className="uk-padding-small">
-                <label className="uk-label">gene family ID</label><br/>
-                <input className="uk-input uk-form-small uk-form-width-small" name="geneFamilyIdentifier"/>
-              </div>
-              <div className="uk-padding-small">
-                <br/>
-                <button className="uk-button uk-button-default uk-form-small" type="submit">SEARCH</button>
-              </div>
+            <div className="uk-padding-small">
+              <label className="uk-label">Genus</label><br/>
+              <select className="uk-select uk-form-small" name="genus" value={selectedGenus}
+                      onChange={e => handleGenusSelection(e)}>
+                <option key={-1} value="">-- any --</option>
+                {genusList.map((genus, index) => (
+                    <option key={index} value={genus}>{genus}</option>
+                ))}
+              </select>
+            </div>
+            <div className="uk-padding-small">
+              <label className="uk-label">species</label><br/>
+              <select className="uk-select uk-form-small" name="species" value={selectedSpecies}
+                      onChange={e => handleSpeciesSelection(e)}>
+                <option key={-1} value="">-- any --</option>
+                {selectedGenus && (
+                    speciesList.map((species, index) => (
+                        <option key={index} value={species}>{species}</option>
+                    ))
+                )}
+              </select>
+            </div>
+            <div className="uk-padding-small">
+              <label className="uk-label">accession</label><br/>
+              <select className="uk-select uk-form-small" name="strain" value={selectedStrain}
+                      onChange={e => handleStrainSelection(e)}>
+                <option key={-1} value="">-- any --</option>
+                {strainList && (
+                    strainList.map((strain, index) => (
+                        <option key={index} value={strain}>{strain}</option>
+                    ))
+                )}
+              </select>
+            </div>
+            <div className="uk-padding-small">
+              <label className="uk-label">name / identifier</label><br/>
+              <input className="uk-input uk-form-small uk-form-width-medium" name="nameOrIdentifier"/>
+            </div>
+            <div className="uk-padding-small">
+              <label className="uk-label">description</label><br/>
+              <input className="uk-input uk-form-small" name="description"/>
+            </div>
+            <div className="uk-padding-small">
+              <label className="uk-label">gene family ID</label><br/>
+              <input className="uk-input uk-form-small uk-form-width-small" name="geneFamilyIdentifier"/>
+            </div>
+            <div className="uk-padding-small">
+              <br/>
+              <button className="uk-button uk-button-default uk-form-small" type="submit">SEARCH</button>
+            </div>
           </form>
 
           {loading && (
@@ -206,37 +340,8 @@ function App() {
                 )}
               </div>
           )}
-
-        {!loading && !genes && (
-            <code>
-              Note: this is for design-purposes only. Linkouts are not implemented.
-            </code>
-        )}
-
         </div>
     );
 }
 
 export default App;
-
-      // {
-      //   "name": "cicar.ICC4958.Ca_00193",
-      //   "identifier": "cicar.ICC4958.gnm2.ann1.Ca_00193",
-      //   "organism": {
-      //     "genus": "Cicer",
-      //     "species": "arietinum"
-      //   },
-      //   "geneFamilyAssignments": [
-      //     null
-      //   ],
-      //   "locations": [
-      //     {
-      //       "chromosome": {
-      //         "identifier": "cicar.ICC4958.gnm2.Ca1"
-      //       },
-      //       "start": 2183507,
-      //       "end": 2184859,
-      //       "strand": "-1"
-      //     }
-      //   ]
-      // }
