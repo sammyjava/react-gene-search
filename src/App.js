@@ -14,7 +14,8 @@ function App() {
     const [selectedSpecies, setSelectedSpecies] = useState("");
     const [selectedStrain, setSelectedStrain] = useState("");
     // text input
-    const [nameOrIdentifier, setNameOrIdentifier] = useState("");
+    const [identifier, setIdentifier] = useState("");
+    const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [geneFamilyIdentifier, setGeneFamilyIdentifier] = useState("");
     // GraphQL response
@@ -36,12 +37,6 @@ function App() {
             "operationName": "Organisms",
             "variables": {
                 "size": 100,
-                "nameOrIdentifier": "Phvul.003G132500",
-                "geneFamilyIdentifier": "legfed_v1_0.L_26Y4PS",
-                "strain": "G19833",
-                "species": "vulgaris",
-                "genus": "Phaseolus",
-                "description": "Photosystem II"
             },
             "query": "query Organisms($size: Int) {  organisms(size: $size) {    genus  }}"
         };
@@ -198,8 +193,8 @@ function App() {
         setSelectedSpecies(formJson.species);
         setSelectedStrain(formJson.strain);
 
-        const query = "query Query($nameOrIdentifier: String, $description: String, $genus: String, $species: String, $strain: String, $geneFamilyIdentifier: String) { " +
-              "genes(genus: $genus, species: $species, strain: $strain, nameOrIdentifier: $nameOrIdentifier, description: $description, geneFamilyIdentifier: $geneFamilyIdentifier) { " +
+        const query = "query Query($identifier: String, $name: String, $description: String, $genus: String, $species: String, $strain: String, $geneFamilyIdentifier: String) { " +
+              "genes(genus: $genus, species: $species, strain: $strain, identifier: $identifier, name: $name, description: $description, geneFamilyIdentifier: $geneFamilyIdentifier) { " +
               "name " +
               "identifier " +
               "description " +
@@ -215,7 +210,8 @@ function App() {
                 "genus": formJson.genus,
                 "species": formJson.species,
                 "strain": formJson.strain,
-                "nameOrIdentifier": formJson.nameOrIdentifier,
+                "identifier": formJson.identifier,
+                "name": formJson.name,
                 "description": formJson.description,
                 "geneFamilyIdentifier": formJson.geneFamilyIdentifier,
             },
@@ -229,16 +225,19 @@ function App() {
         getSpeciesList(e.target.value);
         setSelectedSpecies("");
         setSelectedStrain("");
+        setGenes(null);
     }
 
     function handleSpeciesSelection(e) {
         setSelectedSpecies(e.target.value);
         getStrainList(e.target.value);
         setSelectedStrain("");
+        setGenes(null);
     }
 
     function handleStrainSelection(e) {
         setSelectedStrain(e.target.value);
+        setGenes(null);
     }
 
     return (
@@ -249,7 +248,7 @@ function App() {
           </h2>
 
           <code>
-            Note: this is for design-purposes only. Linkouts are not implemented.
+            This demo is for search form and results design purposes only. Linkouts are not implemented. Pagination is not implemented.
           </code>
 
           <form className="uk-flex" method="post" onSubmit={handleSubmit}>
@@ -288,20 +287,28 @@ function App() {
               </select>
             </div>
             <div className="uk-padding-small">
-              <label className="uk-label">name / identifier</label><br/>
-              <input className="uk-input uk-form-small uk-form-width-medium" name="nameOrIdentifier"/>
+              <label className="uk-label">identifier</label><br/>
+              <input className="uk-input uk-form-small uk-form-width-medium" name="identifier"/><br/>
+              <i>e.g. GmHk_U059486</i>
+            </div>
+            <div className="uk-padding-small">
+              <label className="uk-label">name</label><br/>
+              <input className="uk-input uk-form-small uk-form-width-medium" name="name"/><br/>
+              <i>e.g. IMPA4_4</i>
             </div>
             <div className="uk-padding-small">
               <label className="uk-label">description</label><br/>
-              <input className="uk-input uk-form-small" name="description"/>
+              <input className="uk-input uk-form-small" name="description"/><br/>
+              <i>e.g. Photosystem II</i>
             </div>
             <div className="uk-padding-small">
               <label className="uk-label">gene family ID</label><br/>
-              <input className="uk-input uk-form-small uk-form-width-small" name="geneFamilyIdentifier"/>
+              <input className="uk-input uk-form-small uk-form-width-medium" name="geneFamilyIdentifier"/><br/>
+              <i>e.g. legfed_v1_0.L_GWNJ8J</i>
             </div>
             <div className="uk-padding-small">
               <br/>
-              <button className="uk-button uk-button-default uk-form-small" type="submit">SEARCH</button>
+              <button className="uk-button uk-button-primary uk-form-small" type="submit">SEARCH</button>
             </div>
           </form>
 
