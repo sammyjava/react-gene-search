@@ -320,7 +320,7 @@ function App() {
               <div className="uk-padding">
                 {genes.length ? (
                     genes.map((gene, index) => (
-                        <div>
+                        <div key={index}>
                           <div>
                             <b>{ gene.identifier }</b> ({ gene.name }) <span className="uk-text-italic">{ gene.organism.genus } { gene.organism.species }</span> { gene.strain.identifier }
                           </div>
