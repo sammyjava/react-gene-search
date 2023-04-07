@@ -110,17 +110,15 @@ function App() {
             });
     }
 
-    // {"data":{"strains":[{"identifier":"5-593"},{"identifier":"BAT93"},{"identifier":"G19833"},{"identifier":"LaborOvalle"},{"identifier":"UI111"}]}}
-    
     async function getStrainList(species) {
         setLoading(true);
         const requestJson = {
-            "operationName":"Strains",
+            "operationName": "Strains",
             "variables": {
                 "species": species,
-                "size":100
+                "size": 100
             },
-            "query": "query Strains($species: String) {  strains(species: $species) {    identifier  }}"
+            "query": "query Strains($species: String, $size: Int) {  strains(species: $species, size: $size) {    identifier  }}"
         }
         fetch(process.env.REACT_APP_GRAPHQL_URI, {
             method: "POST",
@@ -289,22 +287,17 @@ function App() {
             <div className="uk-padding-small">
               <label className="uk-label">identifier</label><br/>
               <input className="uk-input uk-form-small uk-form-width-medium" name="identifier"/><br/>
-              <i>e.g. GmHk_U059486</i>
-            </div>
-            <div className="uk-padding-small">
-              <label className="uk-label">name</label><br/>
-              <input className="uk-input uk-form-small uk-form-width-medium" name="name"/><br/>
-              <i>e.g. IMPA4_4</i>
+              <i>e.g. Glyma.13G357700</i>
             </div>
             <div className="uk-padding-small">
               <label className="uk-label">description</label><br/>
-              <input className="uk-input uk-form-small" name="description"/><br/>
-              <i>e.g. Photosystem II</i>
+              <input className="uk-input uk-form-small uk-form-width-large" name="description"/><br/>
+              <i>e.g. protein disulfide isomerase-like protein</i>
             </div>
             <div className="uk-padding-small">
               <label className="uk-label">gene family ID</label><br/>
-              <input className="uk-input uk-form-small uk-form-width-medium" name="geneFamilyIdentifier"/><br/>
-              <i>e.g. legfed_v1_0.L_GWNJ8J</i>
+              <input className="uk-input uk-form-small uk-form-width-small" name="geneFamilyIdentifier"/><br/>
+              <i>e.g. L_HZ6G4Z</i>
             </div>
             <div className="uk-padding-small">
               <br/>
