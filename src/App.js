@@ -32,7 +32,6 @@ function App() {
 
     // get the genus List (run once at initial render)
     async function getGenusList() {
-        setLoading(true);
         const requestJson = {
             "operationName": "Organisms",
             "variables": {
@@ -52,7 +51,6 @@ function App() {
             body: JSON.stringify(requestJson),
         })
             .then((response) => {
-                setLoading(false);
                 return(response.json());
             })
             .then((responseJson) => {
@@ -92,7 +90,6 @@ function App() {
             body: JSON.stringify(requestJson),
         })
             .then((response) => {
-                setLoading(false);
                 return(response.json());
             })
             .then((responseJson) => {
@@ -111,7 +108,6 @@ function App() {
     }
 
     async function getStrainList(species) {
-        setLoading(true);
         const requestJson = {
             "operationName": "Strains",
             "variables": {
@@ -132,7 +128,6 @@ function App() {
             body: JSON.stringify(requestJson),
         })
             .then((response) => {
-                setLoading(false);
                 return(response.json());
             })
             .then((responseJson) => {
@@ -223,19 +218,19 @@ function App() {
         getSpeciesList(e.target.value);
         setSelectedSpecies("");
         setSelectedStrain("");
-        setGenes(null);
+        // setGenes(null);
     }
 
     function handleSpeciesSelection(e) {
         setSelectedSpecies(e.target.value);
         getStrainList(e.target.value);
         setSelectedStrain("");
-        setGenes(null);
+        // setGenes(null);
     }
 
     function handleStrainSelection(e) {
         setSelectedStrain(e.target.value);
-        setGenes(null);
+        // setGenes(null);
     }
 
     return (
@@ -309,7 +304,7 @@ function App() {
               <GlidingBlink/>
           )}
 
-          {!loading && genes && (
+          {genes && (
               <div className="uk-padding">
                 {genes.length ? (
                     genes.map((gene, index) => (
