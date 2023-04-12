@@ -1,0 +1,7 @@
+.gene-linkout {
+    position: absolute;
+    width: 100px;
+    background-color: pink;
+    z-index: 100;
+    border: 1px solid blue;
+}
