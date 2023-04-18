@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export function GeneResult({ gene }) {
 
-    const [isHoveringOnGene, setIsHoveringOnGene] = useState(false);
+    const [showLinkouts, setShowLinkouts] = useState(false);
 
-    const handleGeneMouseOver = () => {
-        setIsHoveringOnGene(true);
+    const handleGeneMouseDown = () => {
+        setShowLinkouts(true);
     };
-    const handleGeneMouseOut = () => {
-        setIsHoveringOnGene(false);
+    const handleGeneMouseUp = () => {
+        setShowLinkouts(false);
     };
     
     return (
         <div>
-          {isHoveringOnGene && (
+          {showLinkouts && (
               <div className="gene-linkout">
                 This is a stub to represent the linkout service for gene identifier: {gene.identifier}
               </div>
           )}
-          <div onMouseOver={handleGeneMouseOver} onMouseOut={handleGeneMouseOut}>
+          <div onMouseDown={handleGeneMouseDown} onMouseUp={handleGeneMouseUp}>
             <b>{ gene.identifier }</b> ({ gene.name }) <span className="uk-text-italic">{ gene.organism.genus } { gene.organism.species }</span> { gene.strain.identifier }
           </div>
           <div className="uk-text-italic">
