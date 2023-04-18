@@ -2,6 +2,7 @@
   "name": "react-gene-search",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/tools/gene-search/",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -16,7 +17,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "purge": "rm -rf ../tools/gene-search/static && cp -fR ./build/* ../tools/gene-search",
+    "frontmatter": "echo '---\ntitle: Gene Search\nlayout: null\n---\n' | cat - ../tools/gene-search/index.html > temp && mv temp ../tools/gene-search/index.html",
+    "deploy": "npm run purge && npm run frontmatter"
   },
   "eslintConfig": {
     "extends": [

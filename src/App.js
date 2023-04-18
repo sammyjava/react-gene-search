@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { GlidingBlink } from 'react-loading-indicators';
 // import { genusList, speciesList, strainList } from './arrays.js';
 
+import { GeneResult } from './GeneResult.js';
+
+import "./App.css";
+
 function App() {
 
     // selector lists
@@ -230,10 +234,8 @@ function App() {
 
     return (
         <div className="uk-padding">
-          
-          <h2 className="uk-heading-small">
-            LIS Gene Search Demo (React, UIkit)
-          </h2>
+
+          <h1>LIS Gene Search</h1>
 
           <code>
             This demo is for search form and results design purposes only. Linkouts are not implemented. Pagination is not implemented - max 10 genes are returned.
@@ -303,30 +305,7 @@ function App() {
               <div className="uk-padding">
                 {genes.length ? (
                     genes.map((gene, index) => (
-                        <div key={index}>
-                          <div>
-                            <b>{ gene.identifier }</b> ({ gene.name }) <span className="uk-text-italic">{ gene.organism.genus } { gene.organism.species }</span> { gene.strain.identifier }
-                          </div>
-                          <div className="uk-text-italic">
-                            { gene.description }
-                          </div>
-                          {gene.locations[0] && gene.locations[0].chromosome && (
-                              <div>
-                                <b>chromosome location:</b> { gene.locations[0].chromosome.identifier }:{gene.locations[0].start}-{gene.locations[0].end} ({gene.locations[0].strand})
-                              </div>
-                          )}
-                          {gene.locations[0] && gene.locations[0].supercontig && (
-                              <div>
-                                <b>supercontig location:</b> { gene.locations[0].supercontig.identifier }:{gene.locations[0].start}-{gene.locations[0].end} ({gene.locations[0].strand})
-                              </div>
-                          )}
-                          {gene.geneFamilyAssignments[0] && (
-                              <div>
-                                <b>gene family:</b> { gene.geneFamilyAssignments[0].geneFamily.identifier }
-                              </div>
-                          )}
-                          <hr className="uk-divider-icon"/>
-                        </div>
+                        <GeneResult key={index} gene={gene} />
                     ))
                 ) : (
                     <div>
@@ -335,6 +314,7 @@ function App() {
                 )}
               </div>
           )}
+          
         </div>
     );
 }
