@@ -13,13 +13,7 @@ function App() {
     const [selectedGenus, setSelectedGenus] = useState("");
     const [selectedSpecies, setSelectedSpecies] = useState("");
     const [selectedStrain, setSelectedStrain] = useState("");
-    // text input
-    const [identifier, setIdentifier] = useState("");
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [geneFamilyIdentifier, setGeneFamilyIdentifier] = useState("");
-    // GraphQL response
-    const [response, setResponse] = useState({});
+
     // genes array from response
     const [genes, setGenes] = useState(null)
     // loading flag
@@ -34,10 +28,7 @@ function App() {
     async function getGenusList() {
         const requestJson = {
             "operationName": "Organisms",
-            "variables": {
-                "size": 100,
-            },
-            "query": "query Organisms($size: Int) {  organisms(size: $size) {    genus  }}"
+            "query": "query Organisms { organisms { genus } }"
         };
         fetch(process.env.REACT_APP_GRAPHQL_URI, {
             method: "POST",
@@ -55,11 +46,11 @@ function App() {
             })
             .then((responseJson) => {
                 const genusList = [];
-                responseJson.data.organisms.map((organism) => {
+                for (const organism of responseJson.data.organisms) {
                     if (organism.genus && !genusList.includes(organism.genus)) {
                         genusList.push(organism.genus);
                     }
-                });
+                }
                 setGenusList(genusList);
                 console.log(genusList);
             })
@@ -94,11 +85,11 @@ function App() {
             })
             .then((responseJson) => {
                 const speciesList = [];
-                responseJson.data.organisms.map((organism) => {
+                for (const organism of responseJson.data.organisms) {
                     if (organism.species && !speciesList.includes(organism.species)) {
                         speciesList.push(organism.species);
                     }
-                });
+                }
                 setSpeciesList(speciesList);
                 console.log(speciesList);
             })
@@ -107,6 +98,7 @@ function App() {
             });
     }
 
+    // get the strain list for a given species
     async function getStrainList(species) {
         const requestJson = {
             "operationName": "Strains",
@@ -132,9 +124,9 @@ function App() {
             })
             .then((responseJson) => {
                 const strainList = [];
-                responseJson.data.strains.map((strain) => {
+                for (const strain of responseJson.data.strains) {
                     strainList.push(strain.identifier);
-                });
+                }
                 setStrainList(strainList);
                 console.log(strainList);
             })
@@ -143,7 +135,7 @@ function App() {
             });
     }
 
-    // query GraphQL and set appropriate state variables
+    // query genes and set appropriate state variables
     async function queryGenes(data = {}) {
         setLoading(true);
         fetch(process.env.REACT_APP_GRAPHQL_URI, {
@@ -162,7 +154,6 @@ function App() {
                 return(response.json());
             })
             .then((responseJson) => {
-                setResponse(responseJson);
                 setGenes(responseJson.data.genes);
             })
             .catch((error) => {
@@ -186,20 +177,24 @@ function App() {
         setSelectedSpecies(formJson.species);
         setSelectedStrain(formJson.strain);
 
-        const query = "query Query($identifier: String, $name: String, $description: String, $genus: String, $species: String, $strain: String, $geneFamilyIdentifier: String) { " +
-              "genes(genus: $genus, species: $species, strain: $strain, identifier: $identifier, name: $name, description: $description, geneFamilyIdentifier: $geneFamilyIdentifier) { " +
+        const query = "query Query($identifier: String, $name: String, $description: String, $genus: String, $species: String, $strain: String, $geneFamilyIdentifier: String, $start: Int, $size: Int) { " +
+              "genes(genus: $genus, species: $species, strain: $strain, identifier: $identifier, name: $name, description: $description, geneFamilyIdentifier: $geneFamilyIdentifier, " +
+              "start: $start, size: $size) {" +
               "name " +
               "identifier " +
               "description " +
               "organism { genus species } " +
               "strain { identifier } " +
               "geneFamilyAssignments { geneFamily { identifier } } " +
-              "locations { chromosome { identifier } start end strand } " +
+              "locations { chromosome { identifier } supercontig { identifier } start end strand } " +
               "}}";
-        
+
+        // limit to 10 genes returned
         queryGenes( {
             "query": query,
             "variables": {
+                "start": 0,
+                "size": 10,
                 "genus": formJson.genus,
                 "species": formJson.species,
                 "strain": formJson.strain,
@@ -241,7 +236,7 @@ function App() {
           </h2>
 
           <code>
-            This demo is for search form and results design purposes only. Linkouts are not implemented. Pagination is not implemented.
+            This demo is for search form and results design purposes only. Linkouts are not implemented. Pagination is not implemented - max 10 genes are returned.
           </code>
 
           <form className="uk-flex" method="post" onSubmit={handleSubmit}>
@@ -317,7 +312,12 @@ function App() {
                           </div>
                           {gene.locations[0] && gene.locations[0].chromosome && (
                               <div>
-                                <b>location:</b> { gene.locations[0].chromosome.identifier }:{gene.locations[0].start}-{gene.locations[0].end} ({gene.locations[0].strand})
+                                <b>chromosome location:</b> { gene.locations[0].chromosome.identifier }:{gene.locations[0].start}-{gene.locations[0].end} ({gene.locations[0].strand})
+                              </div>
+                          )}
+                          {gene.locations[0] && gene.locations[0].supercontig && (
+                              <div>
+                                <b>supercontig location:</b> { gene.locations[0].supercontig.identifier }:{gene.locations[0].start}-{gene.locations[0].end} ({gene.locations[0].strand})
                               </div>
                           )}
                           {gene.geneFamilyAssignments[0] && (
